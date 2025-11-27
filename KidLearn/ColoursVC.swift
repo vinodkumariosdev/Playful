@@ -1,6 +1,4 @@
 import UIKit
-
-import UIKit
 import AVFoundation
 
 final class ColourCell: UICollectionViewCell {
@@ -46,12 +44,18 @@ final class ColourCell: UICollectionViewCell {
         ])
     }
 
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        swatch.backgroundColor = .clear
+        emojiLabel.text = nil
+        nameLabel.text = nil
+        accessibilityLabel = nil
     }
 }
 
-class ColoursVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+final class ColoursViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     private var collectionView: UICollectionView!
     private let speech = AVSpeechSynthesizer()
 
@@ -123,18 +127,17 @@ class ColoursVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
             return UICollectionViewCell()
         }
         let item = colours[indexPath.item]
-        cell.swatch.backgroundColor = item.color
-        cell.nameLabel.text = item.name
-        // keep the name readable against the view background by using the system label color
-        cell.nameLabel.textColor = UIColor.label
-        cell.emojiLabel.text = item.emoji ?? ""
-        // emoji should contrast with the swatch color
-        cell.emojiLabel.textColor = textColor(for: item.color)
-        // subtle emoji shadow for depth
-        cell.emojiLabel.layer.shadowColor = UIColor.black.cgColor
-        cell.emojiLabel.layer.shadowOpacity = 0.12
-        cell.emojiLabel.layer.shadowOffset = CGSize(width: 0, height: 2)
-        return cell
+    cell.swatch.backgroundColor = item.color
+    cell.nameLabel.text = item.name
+    cell.nameLabel.textColor = UIColor.label
+    cell.emojiLabel.text = item.emoji ?? ""
+    cell.emojiLabel.textColor = textColor(for: item.color)
+    cell.emojiLabel.layer.shadowColor = UIColor.black.cgColor
+    cell.emojiLabel.layer.shadowOpacity = 0.12
+    cell.emojiLabel.layer.shadowOffset = CGSize(width: 0, height: 2)
+    cell.isAccessibilityElement = true
+    cell.accessibilityLabel = accessibilityDescription(for: item.color, name: item.name)
+    return cell
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -148,13 +151,9 @@ class ColoursVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
             }, completion: nil)
         })
 
-        // speak color name
-        let name = colours[indexPath.item].name
-        if speech.isSpeaking { speech.stopSpeaking(at: .immediate) }
-        let utt = AVSpeechUtterance(string: name)
-        utt.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utt.rate = 0.45
-        speech.speak(utt)
+    // Speak color name using TalkingTomManager
+    let name = colours[indexPath.item].name
+    TalkingTomManager.shared.speak(text: name)
     }
 
     private func textColor(for color: UIColor) -> UIColor {
@@ -162,5 +161,11 @@ class ColoursVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
         color.getRed(&r, green: &g, blue: &b, alpha: &a)
         let lum = (0.299 * r + 0.587 * g + 0.114 * b)
         return lum > 0.6 ? UIColor.black : UIColor.white
+    }
+    private func accessibilityDescription(for color: UIColor, name: String) -> String {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        color.getRed(&r, green: &g, blue: &b, alpha: &a)
+        let toPct = { (v: CGFloat) -> Int in Int(round(v * 100)) }
+        return "\(name) colour. Approx RGB: R \(toPct(r))%, G \(toPct(g))%, B \(toPct(b))%."
     }
 }

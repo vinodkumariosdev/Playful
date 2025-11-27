@@ -8,10 +8,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--LoginVC-->
+    <!--LoginViewController-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController storyboardIdentifier="LoginVC" id="BYZ-38-t0r" customClass="LoginVC" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="LoginViewController" id="BYZ-38-t0r" customClass="LoginViewController" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -39,10 +39,10 @@
             </objects>
             <point key="canvasLocation" x="1726" y="4"/>
         </scene>
-        <!--RegisterVC-->
+    <!--RegisterViewController-->
         <scene sceneID="zSq-EK-kFZ">
             <objects>
-                <viewController storyboardIdentifier="RegisterVC" id="DNQ-Ll-BE0" customClass="RegisterVC" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="RegisterViewController" id="DNQ-Ll-BE0" customClass="RegisterViewController" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="jFH-Bb-drV">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -54,10 +54,10 @@
             </objects>
             <point key="canvasLocation" x="2367" y="6"/>
         </scene>
-        <!--Student DetailsVC-->
+    <!--StudentDetailsViewController-->
         <scene sceneID="XiU-HJ-ycG">
             <objects>
-                <viewController storyboardIdentifier="StudentDetailsVC" id="Ji8-eo-scH" customClass="StudentDetailsVC" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="StudentDetailsViewController" id="Ji8-eo-scH" customClass="StudentDetailsViewController" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="m0d-lt-tBw">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -69,10 +69,10 @@
             </objects>
             <point key="canvasLocation" x="2984" y="-1"/>
         </scene>
-        <!--Student FormVC-->
+    <!--StudentFormViewController-->
         <scene sceneID="kC7-iO-vIz">
             <objects>
-                <viewController storyboardIdentifier="StudentFormVC" id="yOZ-Xt-Ve7" customClass="StudentFormVC" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="StudentFormViewController" id="yOZ-Xt-Ve7" customClass="StudentFormViewController" customModule="KidLearn" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8yf-Kd-HZI">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

@@ -1,6 +1,6 @@
 import UIKit
 import AVFoundation
-import ObjectiveC
+// Refactored: removed Objective-C associated object usage; titles stored directly.
 
 final class AnimalImageCell: UICollectionViewCell {
     static let reuseIdentifier = "AnimalImageCell"
@@ -26,7 +26,7 @@ final class AnimalImageCell: UICollectionViewCell {
     }
 }
 
-class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+final class AnimalsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     private let animals: [(emoji: String, name: String, images: [String])] = [
         ("🐶", "Dogs", ["dog_11","dog_22","dog_33"]),
         ("🐱", "Cat", ["cat_11","cat_22","cat_33"]),
@@ -41,9 +41,8 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
     private let imageCache = NSCache<NSString, UIImage>()
     private let speak = AVSpeechSynthesizer()
 
-    private struct AssociatedKeys {
-        static var carouselTitles = "carouselTitles"
-    }
+    // Titles derived from animal groups flattened to parallel currentImages.
+    private var imageTitles: [String] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,32 +104,27 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
         ])
 
         // Prepare titles and lazily load images on demand
-        currentImages = []
-        var titles: [String] = []
-        for a in animals {
-            for name in a.images {
-                titles.append(a.name)
-                // fill with placeholder now; actual image will be loaded in cellForItem
-                let key = NSString(string: name)
+        currentImages.removeAll()
+        imageTitles.removeAll()
+        for group in animals {
+            for imgName in group.images {
+                imageTitles.append(group.name)
+                let key = NSString(string: imgName)
                 if let cached = imageCache.object(forKey: key) {
                     currentImages.append(cached)
-                } else if let placeholder = UIHelper.image(from: a.emoji, size: CGSize(width: 800, height: 450)) {
+                } else if let placeholder = UIHelper.image(from: group.emoji, size: CGSize(width: 800, height: 450)) {
                     currentImages.append(placeholder)
                 } else {
                     currentImages.append(UIImage())
                 }
             }
         }
-        // store titles in carouselPage's accessibilityValue for simple access
         carouselPage.numberOfPages = currentImages.count
         carouselPage.currentPage = 0
         carouselCollection.reloadData()
-        // set initial caption
-        if let cap = view.viewWithTag(999) as? UILabel, titles.count > 0 {
-            cap.text = titles[0]
+        if let cap = view.viewWithTag(999) as? UILabel, let firstTitle = imageTitles.first {
+            cap.text = firstTitle
         }
-        // keep titles array in an associated property via objc_setAssociatedObject
-        objc_setAssociatedObject(self, &AssociatedKeys.carouselTitles, titles, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
     }
 
     
@@ -146,16 +140,15 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
         var imageName: String?
         var emoji: String = "🐾"
         var countSoFar = 0
-        for a in animals {
+        findImage: for a in animals {
             for name in a.images {
                 if countSoFar == indexPath.item {
                     imageName = name
                     emoji = a.emoji
-                    break
+                    break findImage
                 }
                 countSoFar += 1
             }
-            if imageName != nil { break }
         }
         if let imageName = imageName {
             let key = NSString(string: imageName)
@@ -178,15 +171,13 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        if scrollView == carouselCollection {
-            let page = Int(round(scrollView.contentOffset.x / scrollView.bounds.width))
-            carouselPage.currentPage = page
-            // update caption from stored titles
-            if let titles = objc_getAssociatedObject(self, &AssociatedKeys.carouselTitles) as? [String], page < titles.count {
-                if let cap = view.viewWithTag(999) as? UILabel { cap.text = titles[page] }
-            }
+        guard scrollView == carouselCollection else { return }
+        let page = Int(round(scrollView.contentOffset.x / scrollView.bounds.width))
+        carouselPage.currentPage = page
+        if page < imageTitles.count, let cap = view.viewWithTag(999) as? UILabel {
+            cap.text = imageTitles[page]
         }
     }
 
-    // moved to UIHelper
+    // Helper methods moved to UIHelper for image generation.
 }

@@ -85,7 +85,7 @@ final class NumberCardCell: UICollectionViewCell {
     }
 }
 
-class NumbersVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+final class NumbersViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     private var collectionView: UICollectionView!
     private let numbers = Array(1...10)
     private let itemsPerPage = 10

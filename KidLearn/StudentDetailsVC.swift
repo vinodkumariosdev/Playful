@@ -7,7 +7,7 @@ struct Student: Codable {
     var avatarEmoji: String
 }
 
-class StudentDetailsVC: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+final class StudentDetailsViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     private var collectionView: UICollectionView!
     private var students: [Student] = []
     private let storageKey = "KidzzStudents"
@@ -79,7 +79,7 @@ class StudentDetailsVC: UIViewController, UICollectionViewDataSource, UICollecti
     }
 
     @objc private func addStudent() {
-        let form = StudentFormVC()
+    let form = StudentFormViewController()
         form.onSave = { [weak self] student in
             guard let self = self else { return }
             self.students.append(student)
@@ -146,7 +146,7 @@ class StudentDetailsVC: UIViewController, UICollectionViewDataSource, UICollecti
 
     private func presentEdit(for index: Int) {
         let existing = students[index]
-        let form = StudentFormVC(student: existing)
+    let form = StudentFormViewController(student: existing)
         form.onSave = { [weak self] updated in
             guard let self = self else { return }
             self.students[index] = updated

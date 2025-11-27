@@ -1,7 +1,7 @@
 import UIKit
 import AVFoundation
 
-class RegisterVC: UIViewController, UITextFieldDelegate {
+final class RegisterViewController: UIViewController, UITextFieldDelegate {
 
     private let titleLabel = UILabel()
     private let nameField = UITextField()

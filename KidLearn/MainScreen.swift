@@ -204,17 +204,17 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
         var vcToPush: UIViewController?
         switch category.title {
         case "Parent":
-            vcToPush = StudentDetailsVC()
+            vcToPush = StudentDetailsViewController()
         case "Numbers":
-            vcToPush = NumbersVC()
+            vcToPush = NumbersViewController()
         case "Shapes":
-            vcToPush = ShapesVC()
+            vcToPush = ShapesViewController()
         case "Colours":
-            vcToPush = ColoursVC()
+            vcToPush = ColoursViewController()
         case "Animals":
-            vcToPush = AnimalsVC()
+            vcToPush = AnimalsViewController()
         case "Fruits & Vegetables":
-            vcToPush = FruitsVC()
+            vcToPush = FruitsViewController()
         case "Draw":
             vcToPush = DrawingViewController()
         default:
@@ -274,7 +274,12 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
     @objc private func openSettings() {
         let vc = SettingsViewController()
         let nav = UINavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .formSheet
+        // Adaptive presentation style: use formSheet where supported (iPad/mac Catalyst), pageSheet for iPhone
+        if traitCollection.userInterfaceIdiom == .pad {
+            nav.modalPresentationStyle = .formSheet
+        } else {
+            nav.modalPresentationStyle = .pageSheet
+        }
         present(nav, animated: true)
     }
 

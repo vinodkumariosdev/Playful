@@ -1,6 +1,6 @@
 import UIKit
 
-class StudentFormVC: UIViewController {
+final class StudentFormViewController: UIViewController {
     var onSave: ((Student) -> Void)?
     private var existing: Student?
 
@@ -124,7 +124,7 @@ class StudentFormVC: UIViewController {
     }
 }
 
-extension StudentFormVC: UIPickerViewDataSource, UIPickerViewDelegate {
+extension StudentFormViewController: UIPickerViewDataSource, UIPickerViewDelegate {
     func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int { genders.count }
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? { genders[row] }
@@ -132,7 +132,7 @@ extension StudentFormVC: UIPickerViewDataSource, UIPickerViewDelegate {
 }
 
 // MARK: - Emoji Picker
-private extension StudentFormVC {
+private extension StudentFormViewController {
     func setupEmojiOptions() {
         var x: CGFloat = 8
         let spacing: CGFloat = 10

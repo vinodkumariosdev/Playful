@@ -65,7 +65,7 @@ final class SineWavePlayer {
     }
 }
 
-class LoginVC: UIViewController, UITextFieldDelegate {
+final class LoginViewController: UIViewController, UITextFieldDelegate {
 
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
@@ -347,7 +347,7 @@ class LoginVC: UIViewController, UITextFieldDelegate {
     }
 
     @objc private func registerTapped() {
-        let reg = RegisterVC()
+    let reg = RegisterViewController()
         navigationController?.pushViewController(reg, animated: true)
     }
 

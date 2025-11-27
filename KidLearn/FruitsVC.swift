@@ -1,6 +1,6 @@
 import UIKit
 
-class FruitsVC: UIViewController {
+final class FruitsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.systemBackground

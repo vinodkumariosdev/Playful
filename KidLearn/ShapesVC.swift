@@ -1,7 +1,7 @@
 import UIKit
 import AVFoundation
 
-class ShapesVC: UIViewController {
+final class ShapesViewController: UIViewController {
     private let speech = AVSpeechSynthesizer()
 
     override func viewDidLoad() {
