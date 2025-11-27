@@ -92,29 +92,21 @@ class RegisterVC: UIViewController, UITextFieldDelegate {
         passwordField.leftView = makeEmojiLabel("🔒")
         passwordField.leftViewMode = .always
 
-        view.addSubview(nameField)
-        view.addSubview(ageField)
-        view.addSubview(genderControl)
-        view.addSubview(passwordField)
+        // Use a vertical stack for consistent alignment & dynamic spacing across device sizes
+        let formStack = UIStackView(arrangedSubviews: [nameField, ageField, genderControl, passwordField])
+        formStack.axis = .vertical
+        formStack.distribution = .fill
+        formStack.alignment = .fill
+        formStack.spacing = 12
+        formStack.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(formStack)
 
         NSLayoutConstraint.activate([
-            nameField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 18),
-            nameField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            nameField.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.78),
+            formStack.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 18),
+            formStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            formStack.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.78),
             nameField.heightAnchor.constraint(equalToConstant: 52),
-
-            ageField.topAnchor.constraint(equalTo: nameField.bottomAnchor, constant: 12),
-            ageField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            ageField.widthAnchor.constraint(equalTo: nameField.widthAnchor),
             ageField.heightAnchor.constraint(equalToConstant: 48),
-
-            genderControl.topAnchor.constraint(equalTo: ageField.bottomAnchor, constant: 12),
-            genderControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            genderControl.widthAnchor.constraint(equalTo: nameField.widthAnchor),
-
-            passwordField.topAnchor.constraint(equalTo: genderControl.bottomAnchor, constant: 12),
-            passwordField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            passwordField.widthAnchor.constraint(equalTo: nameField.widthAnchor),
             passwordField.heightAnchor.constraint(equalToConstant: 52)
         ])
     }

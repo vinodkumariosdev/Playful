@@ -241,9 +241,16 @@ class LoginVC: UIViewController, UITextFieldDelegate {
         registerButton.layer.shadowOffset = CGSize(width: 0, height: 3)
         registerButton.addTarget(self, action: #selector(registerTapped), for: .touchUpInside)
 
+        // Use a horizontal stack for Parent & Register for better alignment on all device widths
+        let duoStack = UIStackView(arrangedSubviews: [parentButton, registerButton])
+        duoStack.translatesAutoresizingMaskIntoConstraints = false
+        duoStack.axis = .horizontal
+        duoStack.distribution = .fillEqually
+        duoStack.alignment = .center
+        duoStack.spacing = 16
+
         view.addSubview(startButton)
-        view.addSubview(parentButton)
-        view.addSubview(registerButton)
+        view.addSubview(duoStack)
 
         NSLayoutConstraint.activate([
             startButton.topAnchor.constraint(equalTo: passwordField.bottomAnchor, constant: 24),
@@ -251,15 +258,11 @@ class LoginVC: UIViewController, UITextFieldDelegate {
             startButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7),
             startButton.heightAnchor.constraint(equalToConstant: 84),
 
-            parentButton.topAnchor.constraint(equalTo: startButton.bottomAnchor, constant: 18),
-            parentButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: -80),
-            parentButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.35),
+            duoStack.topAnchor.constraint(equalTo: startButton.bottomAnchor, constant: 18),
+            duoStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            duoStack.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.7),
             parentButton.heightAnchor.constraint(equalToConstant: 52),
-
-            registerButton.centerYAnchor.constraint(equalTo: parentButton.centerYAnchor),
-            registerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: 80),
-            registerButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.35),
-            registerButton.heightAnchor.constraint(equalToConstant: 52)
+            registerButton.heightAnchor.constraint(equalTo: parentButton.heightAnchor)
         ])
     }
 
