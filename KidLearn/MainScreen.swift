@@ -45,6 +45,7 @@ final class CategoryCell: UICollectionViewCell {
 class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     private let name: String
     private var collectionView: UICollectionView!
+    private var tomToggle: UISwitch = UISwitch()
 
     private struct Category {
         let title: String
@@ -81,17 +82,63 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
     }
 
     private func setupHeader() {
-        let label = UILabel()
+        // Container bar
+        let bar = UIView()
+        bar.translatesAutoresizingMaskIntoConstraints = false
+        bar.backgroundColor = UIColor.secondarySystemBackground
+        bar.layer.cornerRadius = 14
+        bar.layer.shadowColor = Theme.cardShadow.cgColor
+        bar.layer.shadowOpacity = 0.15
+        bar.layer.shadowRadius = 6
+        bar.layer.shadowOffset = CGSize(width: 0, height: 4)
+
+    let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Welcome, \(name)!"
-        label.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        label.textAlignment = .center
-    label.textColor = Theme.primaryText
+        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
+        label.textAlignment = .left
+        label.textColor = Theme.primaryText
 
-        view.addSubview(label)
+        let tomLabel = UILabel()
+        tomLabel.translatesAutoresizingMaskIntoConstraints = false
+        tomLabel.text = "Talking Tom"
+        tomLabel.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+        tomLabel.textColor = Theme.primaryText
+
+        tomToggle.translatesAutoresizingMaskIntoConstraints = false
+        tomToggle.isOn = TalkingTomManager.shared.isEnabled
+        tomToggle.addTarget(self, action: #selector(toggleTom(_:)), for: .valueChanged)
+
+    let settingsButton = UIButton(type: .system)
+    settingsButton.translatesAutoresizingMaskIntoConstraints = false
+    settingsButton.setTitle("⚙︎", for: .normal)
+    settingsButton.titleLabel?.font = UIFont.systemFont(ofSize: 22, weight: .bold)
+    settingsButton.addTarget(self, action: #selector(openSettings), for: .touchUpInside)
+
+    view.addSubview(bar)
+        bar.addSubview(label)
+        bar.addSubview(tomLabel)
+        bar.addSubview(tomToggle)
+    bar.addSubview(settingsButton)
+
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            label.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20)
+            bar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            bar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            bar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            bar.heightAnchor.constraint(equalToConstant: 72),
+
+            label.leadingAnchor.constraint(equalTo: bar.leadingAnchor, constant: 16),
+            label.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            label.trailingAnchor.constraint(lessThanOrEqualTo: tomLabel.leadingAnchor, constant: -12),
+
+            tomToggle.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            tomToggle.trailingAnchor.constraint(equalTo: bar.trailingAnchor, constant: -16),
+
+            tomLabel.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            tomLabel.trailingAnchor.constraint(equalTo: tomToggle.leadingAnchor, constant: -8),
+            settingsButton.centerYAnchor.constraint(equalTo: bar.centerYAnchor),
+            settingsButton.leadingAnchor.constraint(greaterThanOrEqualTo: label.trailingAnchor, constant: 12),
+            settingsButton.trailingAnchor.constraint(equalTo: tomLabel.leadingAnchor, constant: -12)
         ])
     }
 
@@ -115,7 +162,7 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
 
         view.addSubview(collectionView)
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 72),
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 104),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -150,6 +197,7 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
         animateCellTap(cell)
         // no sound on main screen or on cell tap (user preference)
         let category = categories[indexPath.item]
+        guard !category.title.isEmpty else { return }
         // Talking Tom voice for the selected category
         TalkingTomManager.shared.speak(text: category.title)
         // navigate to the corresponding category view controller
@@ -174,16 +222,16 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
         }
 
         if let toPush = vcToPush {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                self.navigationController?.pushViewController(toPush, animated: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+                self?.navigationController?.pushViewController(toPush, animated: true)
             }
         } else {
             // fallback: show simple alert if no VC available
             let title = category.title
             let alert = UIAlertController(title: title, message: "Open \(title) activities (not implemented)", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                self.present(alert, animated: true)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                self?.present(alert, animated: true)
             }
         }
     }
@@ -214,6 +262,20 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
                 cell.transform = .identity
             }, completion: nil)
         })
+    }
+
+    @objc private func toggleTom(_ sender: UISwitch) {
+        TalkingTomManager.shared.isEnabled = sender.isOn
+        // Provide subtle feedback
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
+
+    @objc private func openSettings() {
+        let vc = SettingsViewController()
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .formSheet
+        present(nav, animated: true)
     }
 
     private func imageFromEmoji(_ emoji: String, size: CGFloat) -> UIImage? {

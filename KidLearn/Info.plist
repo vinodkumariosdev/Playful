@@ -4,6 +4,8 @@
 <dict>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app saves your drawings to the Photos library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app optionally lets you pick images from your Photos library to use in learning activities.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
