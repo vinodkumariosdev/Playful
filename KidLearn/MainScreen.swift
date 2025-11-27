@@ -1,4 +1,5 @@
 import UIKit
+import AVFoundation
 
 final class CategoryCell: UICollectionViewCell {
     static let reuseIdentifier = "CategoryCell"
@@ -7,11 +8,11 @@ final class CategoryCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        contentView.backgroundColor = UIColor(white: 1, alpha: 0.9)
-        contentView.layer.cornerRadius = 12
-        contentView.layer.shadowColor = UIColor.black.cgColor
-        contentView.layer.shadowOpacity = 0.08
-        contentView.layer.shadowOffset = CGSize(width: 0, height: 4)
+    contentView.backgroundColor = UIColor(white: 1, alpha: 0.9)
+    contentView.layer.cornerRadius = Theme.defaultCornerRadius
+    contentView.layer.shadowColor = Theme.cardShadow.cgColor
+    contentView.layer.shadowOpacity = 0.08
+    contentView.layer.shadowOffset = CGSize(width: 0, height: 4)
         contentView.layer.masksToBounds = false
 
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -54,12 +55,13 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
     }
 
     private let categories: [Category] = [
-        Category(title: "Parent", emoji: "👪", assetName: "parent_icon", soundFile: "", bgColor: UIColor(red:0.76, green:0.92, blue:0.98, alpha:1)),
-        Category(title: "Numbers", emoji: "🔢", assetName: "numbers_icon", soundFile: "numbers_jingle.wav", bgColor: UIColor(red:0.98, green:0.92, blue:0.5, alpha:1)),
-        Category(title: "Shapes", emoji: "🔺", assetName: "shapes_icon", soundFile: "shapes_jingle.wav", bgColor: UIColor(red:0.9, green:0.78, blue:0.98, alpha:1)),
-        Category(title: "Colours", emoji: "🎨", assetName: "colours_icon", soundFile: "colours_jingle.wav", bgColor: UIColor(red:0.9, green:0.96, blue:0.98, alpha:1)),
-        Category(title: "Animals", emoji: "🦁", assetName: "animals_icon", soundFile: "animals_jingle.wav", bgColor: UIColor(red:0.98, green:0.86, blue:0.78, alpha:1)),
-        Category(title: "Fruits & Vegetables", emoji: "🍎", assetName: "fruits_icon", soundFile: "fruits_jingle.wav", bgColor: UIColor(red:0.85, green:0.98, blue:0.86, alpha:1))
+        Category(title: "Parent", emoji: "👪", assetName: "parent_icon", soundFile: "", bgColor: Theme.bgParent),
+        Category(title: "Numbers", emoji: "🔢", assetName: "numbers_icon", soundFile: "numbers_jingle.wav", bgColor: Theme.bgNumbers),
+        Category(title: "Shapes", emoji: "🔺", assetName: "shapes_icon", soundFile: "shapes_jingle.wav", bgColor: Theme.bgShapes),
+        Category(title: "Colours", emoji: "🎨", assetName: "colours_icon", soundFile: "colours_jingle.wav", bgColor: Theme.bgColours),
+        Category(title: "Animals", emoji: "🦁", assetName: "animals_icon", soundFile: "animals_jingle.wav", bgColor: Theme.bgAnimals),
+        Category(title: "Fruits & Vegetables", emoji: "🍎", assetName: "fruits_icon", soundFile: "fruits_jingle.wav", bgColor: Theme.bgFruits),
+        Category(title: "Draw", emoji: "✏️", assetName: nil, soundFile: "", bgColor: Theme.bgDraw)
     ]
 
     init(name: String) {
@@ -84,7 +86,7 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
         label.text = "Welcome, \(name)!"
         label.font = UIFont.systemFont(ofSize: 28, weight: .bold)
         label.textAlignment = .center
-        label.textColor = UIColor(red: 0.14, green: 0.46, blue: 0.9, alpha: 1)
+    label.textColor = Theme.primaryText
 
         view.addSubview(label)
         NSLayoutConstraint.activate([
@@ -129,14 +131,14 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCell.reuseIdentifier, for: indexPath) as? CategoryCell else {
             return UICollectionViewCell()
         }
-        let model = categories[indexPath.item]
+    let model = categories[indexPath.item]
         cell.titleLabel.text = model.title
         cell.contentView.backgroundColor = model.bgColor
         // try asset first, otherwise generate a high-quality stylized icon at runtime
         if let asset = model.assetName, let img = UIImage(named: asset) {
             cell.imageView.image = img
         } else {
-            cell.imageView.image = makeStylizedIcon(emoji: model.emoji, size: 160, bgColor: model.bgColor)
+            cell.imageView.image = UIHelper.makeStylizedIcon(emoji: model.emoji, size: 160, bgColor: model.bgColor)
         }
         return cell
     }
@@ -147,9 +149,10 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
         guard let cell = collectionView.cellForItem(at: indexPath) as? CategoryCell else { return }
         animateCellTap(cell)
         // no sound on main screen or on cell tap (user preference)
-
-        // navigate to the corresponding category view controller
         let category = categories[indexPath.item]
+        // Talking Tom voice for the selected category
+        TalkingTomManager.shared.speak(text: category.title)
+        // navigate to the corresponding category view controller
         var vcToPush: UIViewController?
         switch category.title {
         case "Parent":
@@ -164,6 +167,8 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
             vcToPush = AnimalsVC()
         case "Fruits & Vegetables":
             vcToPush = FruitsVC()
+        case "Draw":
+            vcToPush = DrawingViewController()
         default:
             vcToPush = nil
         }
@@ -226,46 +231,5 @@ class MainScreen: UIViewController, UICollectionViewDataSource, UICollectionView
     }
 
     // Generate a stylized icon: rounded gradient circle with centered emoji and subtle shadow
-    private func makeStylizedIcon(emoji: String, size: CGFloat, bgColor: UIColor) -> UIImage? {
-        let scale = UIScreen.main.scale
-        let imageSize = CGSize(width: size, height: size)
-        UIGraphicsBeginImageContextWithOptions(imageSize, false, scale)
-        guard let ctx = UIGraphicsGetCurrentContext() else { return nil }
-
-        // draw gradient circle background
-        let rect = CGRect(origin: .zero, size: imageSize)
-        let path = UIBezierPath(ovalIn: rect.insetBy(dx: 2, dy: 2))
-        ctx.saveGState()
-        path.addClip()
-        let start = bgColor.withAlphaComponent(1.0).cgColor
-        let end = bgColor.withAlphaComponent(0.85).withAlphaComponent(0.95).cgColor
-        let colors = [start, end] as CFArray
-        if let grad = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0,1]) {
-            ctx.drawLinearGradient(grad, start: CGPoint(x: 0, y: 0), end: CGPoint(x: 0, y: imageSize.height), options: [])
-        }
-        ctx.restoreGState()
-
-        // drop shadow (soft)
-        ctx.setShadow(offset: CGSize(width: 0, height: 6), blur: 8, color: UIColor(white: 0, alpha: 0.12).cgColor)
-
-        // draw inner circle highlight
-        let innerRect = rect.insetBy(dx: size * 0.08, dy: size * 0.08)
-        let innerPath = UIBezierPath(ovalIn: innerRect)
-        UIColor.white.withAlphaComponent(0.06).setFill()
-        innerPath.fill()
-
-        // draw emoji centered
-        let emojiFont = UIFont.systemFont(ofSize: size * 0.55)
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.alignment = .center
-        let attrs: [NSAttributedString.Key: Any] = [ .font: emojiFont ]
-        let attrStr = NSAttributedString(string: emoji, attributes: attrs)
-        let textSize = attrStr.size()
-        let textRect = CGRect(x: (imageSize.width - textSize.width)/2, y: (imageSize.height - textSize.height)/2, width: textSize.width, height: textSize.height)
-        attrStr.draw(in: textRect)
-
-        let img = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return img
-    }
+    // moved to UIHelper
 }
