@@ -37,8 +37,8 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
     private var carouselCollection: UICollectionView!
     private var carouselPage = UIPageControl()
     private var currentImages: [UIImage] = []
-    // titles parallel to currentImages
-    private var currentTitles: [String] = []
+    // Cache decoded images to avoid re-decoding
+    private let imageCache = NSCache<NSString, UIImage>()
     private let speak = AVSpeechSynthesizer()
 
     private struct AssociatedKeys {
@@ -104,26 +104,20 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
             caption.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
 
-        // load all PNG images listed for each animal into the carousel
+        // Prepare titles and lazily load images on demand
         currentImages = []
         var titles: [String] = []
         for a in animals {
             for name in a.images {
-                if let img = UIImage(named: name) {
-                    currentImages.append(img)
-                    titles.append(a.name)
-                } else if let placeholder = image(from: a.emoji, size: CGSize(width: 800, height: 450)) {
+                titles.append(a.name)
+                // fill with placeholder now; actual image will be loaded in cellForItem
+                let key = NSString(string: name)
+                if let cached = imageCache.object(forKey: key) {
+                    currentImages.append(cached)
+                } else if let placeholder = UIHelper.image(from: a.emoji, size: CGSize(width: 800, height: 450)) {
                     currentImages.append(placeholder)
-                    titles.append(a.name)
-                }
-            }
-        }
-        if currentImages.isEmpty {
-            // fallback: generate one placeholder per animal
-            for a in animals {
-                if let img = image(from: a.emoji, size: CGSize(width: 800, height: 450)) {
-                    currentImages.append(img)
-                    titles.append(a.name)
+                } else {
+                    currentImages.append(UIImage())
                 }
             }
         }
@@ -148,7 +142,34 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AnimalImageCell.reuseIdentifier, for: indexPath) as? AnimalImageCell else { return UICollectionViewCell() }
-        cell.imageView.image = currentImages[indexPath.item]
+        // determine the animal image name for this index
+        var imageName: String?
+        var emoji: String = "🐾"
+        var countSoFar = 0
+        for a in animals {
+            for name in a.images {
+                if countSoFar == indexPath.item {
+                    imageName = name
+                    emoji = a.emoji
+                    break
+                }
+                countSoFar += 1
+            }
+            if imageName != nil { break }
+        }
+        if let imageName = imageName {
+            let key = NSString(string: imageName)
+            if let cached = imageCache.object(forKey: key) {
+                cell.imageView.image = cached
+            } else if let img = UIImage(named: imageName) {
+                imageCache.setObject(img, forKey: key)
+                cell.imageView.image = img
+            } else {
+                cell.imageView.image = UIHelper.image(from: emoji, size: CGSize(width: 800, height: 450))
+            }
+        } else {
+            cell.imageView.image = currentImages[indexPath.item]
+        }
         return cell
     }
 
@@ -167,16 +188,5 @@ class AnimalsVC: UIViewController, UICollectionViewDataSource, UICollectionViewD
         }
     }
 
-    private func image(from emoji: String, size: CGSize) -> UIImage? {
-        let label = UILabel(frame: CGRect(origin: .zero, size: size))
-        label.text = emoji
-        label.textAlignment = .center
-        label.backgroundColor = .clear
-        label.font = UIFont.systemFont(ofSize: min(size.width, size.height) * 0.6)
-        UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        label.layer.render(in: UIGraphicsGetCurrentContext()!)
-        let img = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return img
-    }
+    // moved to UIHelper
 }
